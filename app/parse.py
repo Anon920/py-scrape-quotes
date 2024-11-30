@@ -3,7 +3,7 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup, Tag
 import csv
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 
 BASE_URL = "https://quotes.toscrape.com/"
 
@@ -15,11 +15,11 @@ class Quote:
     tags: List[str]
 
 
-def parse_single_quote(quote: Tag) -> Quote:
+def parse_single_quote(soup: Tag) -> Quote:
     return Quote(
-        text=quote.select_one(".text").text,
-        author=quote.select_one(".author").text,
-        tags=[tag.get_text() for tag in quote.select(".tag")],
+        text=soup.select_one(".text").text,
+        author=soup.select_one(".author").text,
+        tags=[tag.text for tag in soup.select("a.tag")],
     )
 
 
@@ -51,9 +51,8 @@ def get_all_quotes() -> list[Quote]:
 def save_quotes_to_csv(quotes: list[Quote], output_csv_path: str) -> None:
     with open(output_csv_path, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["Quote", "Author", "Tags"])
-        for quote in quotes:
-            writer.writerow([quote.text, quote.author, ", ".join(quote.tags)])
+        writer.writerow(["text", "author", "tags"])
+        writer.writerows([astuple(quote) for quote in quotes])
 
 
 def main(output_csv_path: str) -> [Quote]:
