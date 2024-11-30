@@ -57,7 +57,7 @@ def save_quotes_to_csv(quotes: list[Quote], output_csv_path: str) -> None:
 
 
 def main(output_csv_path: str) -> [Quote]:
-    quotes = get_quotes_in_page()
+    quotes = get_all_quotes()
     save_quotes_to_csv(quotes, output_csv_path)
     print(f"Saved {len(quotes)} quotes to {output_csv_path}")
 
