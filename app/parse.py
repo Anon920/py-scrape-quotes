@@ -1,3 +1,5 @@
+from typing import List
+
 import requests
 from bs4 import BeautifulSoup, Tag
 import csv
@@ -10,7 +12,7 @@ BASE_URL = "https://quotes.toscrape.com/"
 class Quote:
     text: str
     author: str
-    tags: list[str]
+    tags: List[str]
 
 
 def parse_single_quote(quote: Tag) -> Quote:
