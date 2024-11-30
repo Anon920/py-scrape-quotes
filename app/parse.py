@@ -1,4 +1,9 @@
+import requests
+from bs4 import BeautifulSoup, Tag
+import csv
 from dataclasses import dataclass
+
+BASE_URL = "https://quotes.toscrape.com/"
 
 
 @dataclass
@@ -8,8 +13,51 @@ class Quote:
     tags: list[str]
 
 
-def main(output_csv_path: str) -> None:
-    pass
+def parse_single_quote(quote: Tag) -> Quote:
+    return Quote(
+        text=quote.select_one(".text").text,
+        author=quote.select_one(".author").text,
+        tags=[tag.get_text() for tag in quote.select(".tag")],
+    )
+
+
+def get_quotes_from_page(url: str) -> [Quote]:
+    response = requests.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    quotes = [parse_single_quote(quote) for quote in soup.select(".quote")]
+
+    next_button = soup.select_one(".next > a")
+    next_page_url = f"{BASE_URL}{next_button["href"]}" if next_button else None
+
+    return quotes, next_page_url
+
+
+def get_quotes_in_page() -> list[Quote]:
+    all_quotes = []
+    current_url = BASE_URL
+
+    while current_url:
+        quotes, next_page_url = get_quotes_from_page(current_url)
+        all_quotes.extend(quotes)
+        current_url = next_page_url
+
+    return all_quotes
+
+
+def save_quotes_to_csv(quotes: list[Quote], output_csv_path: str) -> None:
+    with open(output_csv_path, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Quote", "Author", "Tags"])
+        for quote in quotes:
+            writer.writerow([quote.text, quote.author, ", ".join(quote.tags)])
+
+
+def main(output_csv_path: str) -> [Quote]:
+    quotes = get_quotes_in_page()
+    save_quotes_to_csv(quotes, output_csv_path)
+    print(f"Saved {len(quotes)} quotes to {output_csv_path}")
 
 
 if __name__ == "__main__":
