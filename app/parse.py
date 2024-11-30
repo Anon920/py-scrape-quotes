@@ -31,12 +31,12 @@ def get_quotes_from_page(url: str) -> [Quote]:
     quotes = [parse_single_quote(quote) for quote in soup.select(".quote")]
 
     next_button = soup.select_one(".next > a")
-    next_page_url = f"{BASE_URL}{next_button["href"]}" if next_button else None
+    next_page_url = f"{BASE_URL}{next_button['href']}" if next_button else None
 
     return quotes, next_page_url
 
 
-def get_quotes_in_page() -> list[Quote]:
+def get_all_quotes() -> list[Quote]:
     all_quotes = []
     current_url = BASE_URL
 
